@@ -2,11 +2,11 @@
 from flask import Flask
 import numpy
 
-main = Flask(__name__)
+app = Flask(__name__)
 
-@main.route('/')
+@app.route('/')
 def index():
     return "Hello World!"
 
 if __name__ == '__main__':
-    main.run()
+    app.run()
