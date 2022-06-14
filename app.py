@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
 from flask import Flask, request
+from flask_cors import CORS
 import random
 import json
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
+
 jrand = {}
 
 
