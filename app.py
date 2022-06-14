@@ -113,7 +113,7 @@ class query_class:
 
 @app.route('/')
 def root_index():
-    return "Hello World!"
+    return "Successfully accessed."
 
 @app.route('/random/uniform', methods=["GET"])
 def uniform_index():
