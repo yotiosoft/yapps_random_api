@@ -6,12 +6,15 @@ import random
 import json
 
 app = Flask(__name__)
+
+# 別サーバ(=GitHub Pages)からのリクエストを許可
 CORS(app, supports_credentials=True)
 
 jrand = {}
 
-
+# クエリのクラス
 class query_class:
+    # 変数初期化
     def __init__(self):
         self.min = 0
         self.max = 0
@@ -25,16 +28,21 @@ class query_class:
         self.type = ""
         self.err = {}
 
+    # クエリパラメータの取得
     def get(self, distribution):
         try:
+            # type: 整数 or 浮動小数点数
             arg_type = request.args.get("type")
             if self.type is not None:
                 self.type = arg_type
 
+            # trials: 試行回数（発生させる乱数の数）
             arg_trials = request.args.get("trials")
             if arg_trials is not None:
                 self.trials = int(arg_trials)
-                    
+
+            # 指定された確率分布関数が...
+            # 一様分布 or 三角分布の場合  
             if distribution == "uniform" or distribution == "triangular":
                 req_min = request.args.get("min")
                 req_max = request.args.get("max")
@@ -69,6 +77,7 @@ class query_class:
                         
                 return
 
+            # 正規分布の場合
             elif distribution == "normal":
                 req_mu = request.args.get("mu")
                 req_sigma = request.args.get("sigma")
@@ -84,6 +93,7 @@ class query_class:
                     self.sigma = float(req_sigma)
                 return
 
+            # ラムダ分布の場合
             elif distribution == "lambda":
                 req_lambd = request.args.get("lambd")
 
@@ -93,6 +103,7 @@ class query_class:
                     self.lambd = 1/float(req_lambd)
                 return
 
+            # ベータ分布 or ガンマ分布の場合
             elif distribution == "beta" or distribution == "gamma":
                 req_alpha = request.args.get("alpha")
                 req_beta = request.args.get("beta")
@@ -114,151 +125,188 @@ class query_class:
             return
 
 
+# ルートディレクトリ：接続確認用
 @app.route('/')
 def root_index():
-    return "Successfully accessed."
+    return "Hello World!"
 
+# uniform: 一様分布
 @app.route('/random/uniform', methods=["GET"])
 def uniform_index():
     rand = []
     jrand = {}
+    # クエリパラメータの取得
     query = query_class()
     query.get("uniform")
 
+    # クエリ取得中にエラーが発生したらエラーをresponseとして返す
     if 'error_num' in query.err:
         return json.dumps(query.err)
-
+    
     try:
+        # trials回, 乱数を生成
         for i in range(query.trials):
             if query.type == "int":
                 rand.append(random.randint(query.min, query.max))
             else:
                 rand.append(random.uniform(query.min, query.max))
     except ValueError:
+        # パラメータが間違っていることによりエラーが発生した場合はエラーを返す
         jrand["error_num"] = 2
         jrand["error_message"] = "Error: Wrong parameter"
         return json.dumps(jrand)
 
+    # JSON形式に変換して完了
     jrand["rand_array"] = rand
     return json.dumps(jrand)
 
+# normal: 正規分布
 @app.route('/random/normal', methods=["GET"])
 def normal_index():
     rand = []
     jrand = {}
+    # クエリパラメータの取得
     query = query_class()
     query.get("normal")
 
+    # クエリ取得中にエラーが発生したらエラーをresponseとして返す
     if 'error_num' in query.err:
         return json.dumps(query.err)
 
     try:
+        # trials回, 乱数を生成
         for i in range(query.trials):
             rand_temp = random.gauss(query.mu, query.sigma)
             if query.type == "int":
                 rand_temp = int(rand_temp)
             rand.append(rand_temp)
     except ValueError:
+        # パラメータが間違っていることによりエラーが発生した場合はエラーを返す
         jrand["error_num"] = 2
         jrand["error_message"] = "Error: Wrong parameter"
         return json.dumps(jrand)
 
+    # JSON形式に変換して完了
     jrand["rand_array"] = rand
     return json.dumps(jrand)
 
+# beta: ベータ分布
 @app.route('/random/beta', methods=["GET"])
 def beta_index():
     rand = []
     jrand = {}
+    # クエリパラメータの取得
     query = query_class()
     query.get("beta")
 
+    # クエリ取得中にエラーが発生したらエラーをresponseとして返す
     if 'error_num' in query.err:
         return json.dumps(query.err)
 
     try:
+        # trials回, 乱数を生成
         for i in range(query.trials):
             rand_temp = random.betavariate(query.alpha, query.beta)
             if query.type == "int":
                 rand_temp = int(rand_temp)
             rand.append(rand_temp)
     except ValueError:
+        # パラメータが間違っていることによりエラーが発生した場合はエラーを返す
         jrand["error_num"] = 2
         jrand["error_message"] = "Error: Wrong parameter"
         return json.dumps(jrand)
 
+    # JSON形式に変換して完了
     jrand["rand_array"] = rand
     return json.dumps(jrand)
 
+# triangular: 三角分布
 @app.route('/random/triangular', methods=["GET"])
 def triangular_index():
     rand = []
     jrand = {}
+    # クエリパラメータの取得
     query = query_class()
     query.get("triangular")
 
+    # クエリ取得中にエラーが発生したらエラーをresponseとして返す
     if 'error_num' in query.err:
         return json.dumps(query.err)
 
     try:
+        # trials回, 乱数を生成
         for i in range(query.trials):
             rand_temp = random.triangular(query.min, query.max, query.mode)
             if query.type == "int":
                 rand = int(rand_temp)
             rand.append(rand_temp)
     except ValueError:
+        # パラメータが間違っていることによりエラーが発生した場合はエラーを返す
         jrand["error_num"] = 2
         jrand["error_message"] = "Error: Wrong parameter"
         return json.dumps(jrand)
 
+    # JSON形式に変換して完了
     jrand["rand_array"] = rand
     return json.dumps(jrand)
 
+# lambda: ラムダ分布
 @app.route('/random/lambda', methods=["GET"])
 def lambda_index():
     rand = []
     jrand = {}
+    # クエリパラメータの取得
     query = query_class()
     query.get("lambda")
 
+    # クエリ取得中にエラーが発生したらエラーをresponseとして返す
     if 'error_num' in query.err:
         return json.dumps(query.err)
 
     try:
+        # trials回, 乱数を生成
         for i in range(query.trials):
             rand_temp = random.expovariate(query.lambd)
             if query.type == "int":
                 rand = int(rand_temp)
             rand.append(rand_temp)
     except ValueError:
+        # パラメータが間違っていることによりエラーが発生した場合はエラーを返す
         jrand["error_num"] = 2
         jrand["error_message"] = "Error: Wrong parameter"
         return json.dumps(jrand)
 
+    # JSON形式に変換して完了
     jrand["rand_array"] = rand
     return json.dumps(jrand)
 
+# gamma: ガンマ分布
 @app.route('/random/gamma', methods=["GET"])
 def gamma_index():
     rand = []
     jrand = {}
+    # クエリパラメータの取得
     query = query_class()
     query.get("gamma")
 
+    # クエリ取得中にエラーが発生したらエラーをresponseとして返す
     if 'error_num' in query.err:
         return json.dumps(query.err)
 
     try:
+        # trials回, 乱数を生成
         for i in range(query.trials):
             rand_temp = random.gammavariate(query.alpha, query.beta)
             if query.type == "int":
                 rand = int(rand_temp)
             rand.append(rand_temp)
     except ValueError:
+        # パラメータが間違っていることによりエラーが発生した場合はエラーを返す
         jrand["error_num"] = 2
         jrand["error_message"] = "Error: Wrong parameter"
         return json.dumps(jrand)
 
+    # JSON形式に変換して完了
     jrand["rand_array"] = rand
     return json.dumps(jrand)
 
