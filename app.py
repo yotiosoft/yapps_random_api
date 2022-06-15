@@ -128,7 +128,7 @@ class query_class:
 # ルートディレクトリ：接続確認用
 @app.route('/')
 def root_index():
-    return "Hello World!"
+    return "Successfully accessed."
 
 # uniform: 一様分布
 @app.route('/random/uniform', methods=["GET"])
