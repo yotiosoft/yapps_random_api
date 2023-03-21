@@ -10,7 +10,7 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 kiwisolver==1.4.3
 MarkupSafe==2.1.1
-numpy==1.22.4
+numpy==1.21.6
 packaging==21.3
 Pillow==9.1.1
 pyparsing==3.0.9
